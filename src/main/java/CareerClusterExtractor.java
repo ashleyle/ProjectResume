@@ -105,6 +105,7 @@ public class CareerClusterExtractor {
     private void scrapeCareers() throws IOException {
         new File(resumeFolder).mkdir();
         FirefoxDriver driver = getDriver();
+        System.out.println(driver);
         Elements clusters = extractClusters(driver);
         saveClusters(clusters);
         for (Element cluster : clusters) {
@@ -116,7 +117,9 @@ public class CareerClusterExtractor {
 
     private static Elements extractClusters(FirefoxDriver driver) {
         String url = "https://www.onetonline.org/find/career";
+        System.out.println("about to get careers");
         driver.get(url);
+        System.out.println("got careers");
 
         // parse dynamically generated HTML into JSoup
         Document document = Jsoup.parse(driver.getPageSource());
