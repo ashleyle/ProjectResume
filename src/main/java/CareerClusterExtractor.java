@@ -26,6 +26,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class CareerClusterExtractor {
+    private static String resumeFolder = "resumes/";
+    private static int parallelism = 10;
+
+
     private ExecutorService pool;
     private BlockingQueue<FirefoxDriver> queue;
 
@@ -34,8 +38,8 @@ public class CareerClusterExtractor {
         System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE,"true");
         System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE,"/dev/null");
 
-        pool = Executors.newFixedThreadPool(10);
-        queue = firefoxDriverQueue(10);
+        pool = Executors.newFixedThreadPool(parallelism);
+        queue = firefoxDriverQueue(parallelism);
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
@@ -67,7 +71,7 @@ public class CareerClusterExtractor {
     private int collectResumes(String clusterName, Map.Entry<String, List<String>> pathToCareerEntry) {
         int numResumes = 0;
         String pathwayName = pathToCareerEntry.getKey().replaceAll("\\W+", "_");
-        String pathName = clusterName + "/" + pathwayName;
+        String pathName = resumeFolder + clusterName + "/" + pathwayName;
         List<String> occupationNames = pathToCareerEntry.getValue();
         List<Future<Integer>> numCountList = new ArrayList<>();
         for (String occupation : occupationNames) {
@@ -99,6 +103,7 @@ public class CareerClusterExtractor {
     }
 
     private void scrapeCareers() throws IOException {
+        new File(resumeFolder).mkdir();
         FirefoxDriver driver = getDriver();
         Elements clusters = extractClusters(driver);
         saveClusters(clusters);
@@ -122,14 +127,14 @@ public class CareerClusterExtractor {
 
     private static void saveClusters(Elements clusters) throws IOException {
         // create text file for cluster names
-        File clusterFile = new File( "cluster_names.txt");
+        File clusterFile = new File( resumeFolder + "cluster_names.txt");
         FileWriter writer = new FileWriter(clusterFile);
 
         // extract occupations for each cluster
         for (Element cluster : clusters) {
             String clusterName = cluster.wholeText().replaceAll("\\W+", "_");
             writer.write(clusterName + "\n");
-            new File(clusterName).mkdir();
+            new File(resumeFolder + clusterName).mkdir();
         }
         writer.flush();
         writer.close();
@@ -159,13 +164,13 @@ public class CareerClusterExtractor {
     private static void saveCareers(String clusterName, Map<String, List<String>> careers) throws IOException {
         clusterName = clusterName.replaceAll("\\W+", "_");
         // create text file for pathway names
-        File pathFile = new File(clusterName + "/pathway_names.txt");
+        File pathFile = new File(resumeFolder + clusterName + "/pathway_names.txt");
         FileWriter pwriter = new FileWriter(pathFile);
 
         for (Map.Entry<String, List<String>> careerPath : careers.entrySet()) {
             String careerPathName = careerPath.getKey().replaceAll("\\W+", "_");
             pwriter.write(careerPathName + "\n");
-            String path = clusterName + "/" + careerPathName;
+            String path = resumeFolder + clusterName + "/" + careerPathName;
             new File(path).mkdir();
 
             // create text file for occupation names

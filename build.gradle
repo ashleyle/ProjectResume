@@ -1,0 +1,15 @@
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.apache.commons:commons-text:1.6'
+    compile 'org.jsoup:jsoup:1.11.3'
+    compile 'org.seleniumhq.selenium:selenium-java:3.14.0'
+}
+
+mainClassName = 'CareerClusterExtractor'
