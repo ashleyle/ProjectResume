@@ -3,6 +3,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 
 import java.io.File;
@@ -197,6 +198,7 @@ public class CareerClusterExtractor {
         // create Firefox options instance in headless mode
         FirefoxOptions firefoxOptions = new FirefoxOptions();
         firefoxOptions.addArguments("--headless");
+        firefoxOptions.setLogLevel(FirefoxDriverLogLevel.TRACE);
 
         BlockingQueue<FirefoxDriver> queue = new LinkedBlockingDeque<>(capacity);
         for (int i = 0; i < capacity; i++) {
