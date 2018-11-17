@@ -8,12 +8,14 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +29,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class CareerClusterExtractor {
-    private static String resumeFolder = "resumes/";
+    private static final String resumeFolder = "resumes/";
+    private static final String hierarchInfoFolder = "hierarchy_info/";
     private static int parallelism = 10;
 
 
@@ -53,9 +56,12 @@ public class CareerClusterExtractor {
     private int scrapeResumes() throws IOException, ClassNotFoundException {
         int numResumes = 0;
         // find the hierarchy info files
-        File folder = new File("hierarchy_info");
+        File folder = new File(hierarchInfoFolder);
         File[] clusterFiles = folder.listFiles();
-        assert clusterFiles != null;
+        if (clusterFiles == null) {
+            throw new FileNotFoundException(hierarchInfoFolder + " is not a valid directory");
+        }
+        Arrays.sort(clusterFiles);
         for (File clusterFile : clusterFiles) {
             Set<Map.Entry<String, List<String>>> pathToCareer = deserializeCareers(clusterFile).entrySet();
             for (Map.Entry<String, List<String>> entry : pathToCareer) {
@@ -79,6 +85,7 @@ public class CareerClusterExtractor {
             String filename = pathName + "/" + occupation.replaceAll("\\W+", "_") + ".txt";
             File file = new File(filename);
             if (!file.exists()) {
+                System.out.println("Starting: " + filename);
                 ResumeScraperTask resumeScraperTask = new ResumeScraperTask(filename, occupation, queue);
                 numCountList.add(pool.submit(resumeScraperTask));
             }
@@ -96,7 +103,6 @@ public class CareerClusterExtractor {
     private Map<String, List<String>> deserializeCareers(File clusterFile) throws IOException, ClassNotFoundException {
         FileInputStream fileIn = new FileInputStream(clusterFile);
         ObjectInputStream in = new ObjectInputStream(fileIn);
-        String clusterName = clusterFile.getName();
         Map<String, List<String>> pathToOccupations = (Map<String, List<String>>) in.readObject();
         in.close();
         fileIn.close();
@@ -185,7 +191,7 @@ public class CareerClusterExtractor {
         }
         pwriter.flush();
         pwriter.close();
-        new File("hierarchy_info").mkdir();
+        new File(hierarchInfoFolder).mkdir();
         FileOutputStream fileOut = new FileOutputStream("hierarchy_info/" + clusterName);
         ObjectOutputStream out = new ObjectOutputStream(fileOut);
         out.writeObject(careers);

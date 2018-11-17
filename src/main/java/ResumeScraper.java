@@ -98,10 +98,9 @@ public class ResumeScraper {
 
     // Below function will look at the resume list array and help writing resume to the file in the end
     private int writeFile(List<String> resumeList, BufferedWriter writer) {
-        try {
-            // Iterate over the resume list
-            for (String aResume : resumeList) {
-
+        // Iterate over the resume list
+        for (String aResume : resumeList) {
+            try {
                 // get the resume from below url
                 String url = "https://resumes.indeed.com" + aResume;
 
@@ -126,11 +125,12 @@ public class ResumeScraper {
                 // write to file in buffered fashion
                 writer.write(json);
                 numResumes++;
+            } catch (HttpStatusException e) { // in case any exception
+                System.out.println("Exception occurred");
+                e.printStackTrace(System.err);
+            } catch (IOException ex) {
+                Logger.getLogger(ResumeScraper.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } catch (HttpStatusException e) { // in case any exception
-            System.out.println("Exceptions occurred");
-        } catch (IOException ex) {
-            Logger.getLogger(ResumeScraper.class.getName()).log(Level.SEVERE, null, ex);
         }
         return numResumes;
     }
