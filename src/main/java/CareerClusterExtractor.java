@@ -30,7 +30,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class CareerClusterExtractor {
     private static final String resumeFolder = "resumes/";
-    private static final String hierarchInfoFolder = "hierarchy_info/";
+    private static final String hierarchyInfoFolder = "hierarchy_info/";
     private static int parallelism = 10;
 
 
@@ -56,10 +56,10 @@ public class CareerClusterExtractor {
     private int scrapeResumes() throws IOException, ClassNotFoundException {
         int numResumes = 0;
         // find the hierarchy info files
-        File folder = new File(hierarchInfoFolder);
+        File folder = new File(hierarchyInfoFolder);
         File[] clusterFiles = folder.listFiles();
         if (clusterFiles == null) {
-            throw new FileNotFoundException(hierarchInfoFolder + " is not a valid directory");
+            throw new FileNotFoundException(hierarchyInfoFolder + " is not a valid directory");
         }
         Arrays.sort(clusterFiles);
         for (File clusterFile : clusterFiles) {
@@ -110,7 +110,13 @@ public class CareerClusterExtractor {
     }
 
     private void scrapeCareers() throws IOException {
-        new File(resumeFolder).mkdir();
+        File resumeDirectory = new File(resumeFolder);
+        File hierarchyInfoDirectory = new File(hierarchyInfoFolder);
+        if (resumeDirectory.isDirectory() && hierarchyInfoDirectory.isDirectory()) {
+            return; // The career file structures already exist
+        }
+        resumeDirectory.mkdir();
+        hierarchyInfoDirectory.mkdir();
         FirefoxDriver driver = getDriver();
         Elements clusters = extractClusters(driver);
         saveClusters(clusters);
@@ -191,7 +197,6 @@ public class CareerClusterExtractor {
         }
         pwriter.flush();
         pwriter.close();
-        new File(hierarchInfoFolder).mkdir();
         FileOutputStream fileOut = new FileOutputStream("hierarchy_info/" + clusterName);
         ObjectOutputStream out = new ObjectOutputStream(fileOut);
         out.writeObject(careers);
