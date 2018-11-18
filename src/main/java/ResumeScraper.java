@@ -74,15 +74,15 @@ public class ResumeScraper {
             List<String> resumeList = resume.eachAttr("href");
 
             // Break condition -- no more resumes or past limit
-            if (resumeList.size() == 0 || marker >= limit) {
+            if (resumeList.size() == 0) { //|| marker >= limit) {
                 break;
             }
 
             // Trim resumeList if near limit
-            int numToKeep = Math.min(limit - marker, resumeList.size());
-            if (numToKeep < resumeList.size()) {
-                resumeList = resumeList.subList(0, numToKeep);
-            }
+//            int numToKeep = Math.min(limit - marker, resumeList.size());
+//            if (numToKeep < resumeList.size()) {
+//                resumeList = resumeList.subList(0, numToKeep);
+//            }
 
             // trim each URL
             resumeList = resumeList.stream().map(s -> s.substring(0, s.indexOf('?'))).collect(Collectors.toList());
